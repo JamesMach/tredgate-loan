@@ -32,5 +32,37 @@ jobs:
       - name: Run tests
         run: npm run test
 
+      - name: Generate test summary
+        if: always()
+        run: |
+          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f test-results/results.json ]; then
+            TOTAL_TESTS=$(jq '.numTotalTests' test-results/results.json)
+            PASSED_TESTS=$(jq '.numPassedTests' test-results/results.json)
+            FAILED_TESTS=$(jq '.numFailedTests' test-results/results.json)
+            TEST_FILES=$(jq '.testResults | length' test-results/results.json)
+            echo "### Test Results" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ **Passed Tests:** $PASSED_TESTS / $TOTAL_TESTS" >> $GITHUB_STEP_SUMMARY
+            if [ "$FAILED_TESTS" -gt 0 ]; then
+              echo "- ❌ **Failed Tests:** $FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "- 📁 **Test Files:** $TEST_FILES" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            if [ "$FAILED_TESTS" -eq 0 ]; then
+              echo "🎉 **All tests passed!**" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⚠️ Test results file not found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 30
+
       - name: Build
         run: npm run build
