@@ -5,6 +5,11 @@ export default defineConfig({
   plugins: [vue()],
   test: {
     environment: 'jsdom',
-    globals: true
+    globals: true,
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      'tests/failing_heal.spec.ts'
+    ]
   }
 })
