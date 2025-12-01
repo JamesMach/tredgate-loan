@@ -62,7 +62,6 @@ function formatCurrency(value: number): string {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
 }
 
 .stat-card {

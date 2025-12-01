@@ -45,17 +45,21 @@ onMounted(() => {
       <p class="tagline">Simple loan application management</p>
     </header>
 
-    <LoanSummary :loans="loans" />
-
     <main class="main-content">
-      <LoanForm @created="refreshLoans" />
-      <LoanList
-        :loans="loans"
-        @approve="handleApprove"
-        @reject="handleReject"
-        @auto-decide="handleAutoDecide"
-        @delete="handleDelete"
-      />
+      <div class="left-column">
+        <LoanForm @created="refreshLoans" />
+      </div>
+      
+      <div class="right-column">
+        <LoanSummary :loans="loans" />
+        <LoanList
+          :loans="loans"
+          @approve="handleApprove"
+          @reject="handleReject"
+          @auto-decide="handleAutoDecide"
+          @delete="handleDelete"
+        />
+      </div>
     </main>
   </div>
 </template>
@@ -68,6 +72,7 @@ onMounted(() => {
 .app-header {
   text-align: center;
   margin-bottom: 2rem;
+  padding: 1.5rem;
 }
 
 .logo {
@@ -87,13 +92,29 @@ onMounted(() => {
   align-items: flex-start;
 }
 
+.left-column {
+  flex: 0 0 400px;
+}
+
+.right-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 @media (max-width: 900px) {
   .main-content {
     flex-direction: column;
   }
 
-  .main-content > :first-child {
-    max-width: 100%;
+  .left-column {
+    flex: 1;
+    width: 100%;
+  }
+
+  .right-column {
     width: 100%;
   }
 }
