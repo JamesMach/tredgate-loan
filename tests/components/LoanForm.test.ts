@@ -255,7 +255,7 @@ describe('LoanForm', () => {
 
   it('handles non-Error exceptions', async () => {
     vi.mocked(loanService.createLoanApplication).mockImplementation(() => {
-      throw 'Something went wrong'
+      throw { code: 500, message: 'Internal error' } // Non-Error object
     })
     
     const wrapper = mount(LoanForm)

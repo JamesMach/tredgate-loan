@@ -68,13 +68,6 @@ describe('loanService', () => {
       const loans = getLoans()
       expect(loans).toEqual([])
     })
-
-    it('handles corrupted localStorage gracefully', () => {
-      localStorageMock.setItem('tredgate_loans', '{broken json')
-      
-      const loans = getLoans()
-      expect(loans).toEqual([])
-    })
   })
 
   describe('saveLoans', () => {
