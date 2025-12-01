@@ -53,8 +53,23 @@ npm run build
 ### Testing
 
 ```bash
-npm run test
+# Run all tests once
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+
+# View HTML test report
+npm run test:report
 ```
+
+For detailed testing documentation, see [TESTING.md](./TESTING.md).
 
 ### Linting
 
@@ -78,7 +93,12 @@ src/
 ├── App.vue           # Main application component
 └── main.ts           # Application entry point
 tests/
-└── loanService.test.ts  # Unit tests
+├── components/       # Component unit tests
+│   ├── App.test.ts
+│   ├── LoanForm.test.ts
+│   ├── LoanList.test.ts
+│   └── LoanSummary.test.ts
+└── loanService.test.ts  # Service unit tests
 ```
 
 ## Data Persistence
