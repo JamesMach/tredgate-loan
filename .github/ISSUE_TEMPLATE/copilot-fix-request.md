@@ -26,12 +26,12 @@ PASTE_TEST_OUTPUT_HERE
 
 ## Proposed Solution
 
-Please review the test file `tests/failing_heal.spec.ts` and fix the failing assertion. Follow the instructions in `.github/copilot-healing-agent.md` for guidance.
+Please review the test file `tests/failing_heal.spec.ts` and fix the failing assertion. Follow the instructions in `.github/agents/copilot-healing-agent.md` for guidance.
 
 ## Additional Information
 
 - **File to fix**: `tests/failing_heal.spec.ts`
-- **Agent instructions**: `.github/copilot-healing-agent.md`
+- **Agent instructions**: `.github/agents/copilot-healing-agent.md`
 - **Repository conventions**: `.github/copilot-instructions.md`
 
 ### Acceptance Criteria

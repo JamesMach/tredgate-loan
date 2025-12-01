@@ -1,4 +1,7 @@
-# Copilot Healing Agent Instructions
+---
+name: copilot-healing-agent
+description: Agent specializing in analyzing test failures and implementing fixes for the self-healing workflow
+---
 
 This document provides instructions for the Copilot agent when operating in "healing mode" to fix failing tests detected by the self-healing workflow.
 
