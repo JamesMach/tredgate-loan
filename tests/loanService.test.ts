@@ -61,6 +61,20 @@ describe('loanService', () => {
       const loans = getLoans()
       expect(loans).toEqual(storedLoans)
     })
+
+    it('returns empty array when localStorage contains invalid JSON', () => {
+      localStorageMock.setItem('tredgate_loans', 'invalid json')
+      
+      const loans = getLoans()
+      expect(loans).toEqual([])
+    })
+
+    it('handles corrupted localStorage gracefully', () => {
+      localStorageMock.setItem('tredgate_loans', '{broken json')
+      
+      const loans = getLoans()
+      expect(loans).toEqual([])
+    })
   })
 
   describe('saveLoans', () => {
@@ -148,6 +162,83 @@ describe('loanService', () => {
           interestRate: -0.05
         })
       ).toThrow('Interest rate cannot be negative')
+    })
+
+    it('throws error for whitespace-only applicant name', () => {
+      expect(() =>
+        createLoanApplication({
+          applicantName: '   ',
+          amount: 10000,
+          termMonths: 12,
+          interestRate: 0.05
+        })
+      ).toThrow('Applicant name is required')
+    })
+
+    it('throws error for negative amount', () => {
+      expect(() =>
+        createLoanApplication({
+          applicantName: 'John',
+          amount: -5000,
+          termMonths: 12,
+          interestRate: 0.05
+        })
+      ).toThrow('Amount must be greater than 0')
+    })
+
+    it('throws error for negative termMonths', () => {
+      expect(() =>
+        createLoanApplication({
+          applicantName: 'John',
+          amount: 10000,
+          termMonths: -12,
+          interestRate: 0.05
+        })
+      ).toThrow('Term months must be greater than 0')
+    })
+
+    it('saves loan to localStorage', () => {
+      const input = {
+        applicantName: 'Test User',
+        amount: 10000,
+        termMonths: 12,
+        interestRate: 0.05
+      }
+
+      createLoanApplication(input)
+
+      expect(localStorageMock.setItem).toHaveBeenCalled()
+      const savedData = localStorageMock.setItem.mock.calls[0]?.[1]
+      const savedLoans = JSON.parse(savedData as string)
+      expect(savedLoans).toHaveLength(1)
+      expect(savedLoans[0]?.applicantName).toBe('Test User')
+    })
+
+    it('appends new loan to existing loans', () => {
+      const existingLoan: LoanApplication = {
+        id: 'existing',
+        applicantName: 'Existing User',
+        amount: 5000,
+        termMonths: 6,
+        interestRate: 0.04,
+        status: 'pending',
+        createdAt: '2024-01-01T00:00:00.000Z'
+      }
+      saveLoans([existingLoan])
+
+      const input = {
+        applicantName: 'New User',
+        amount: 10000,
+        termMonths: 12,
+        interestRate: 0.05
+      }
+
+      createLoanApplication(input)
+
+      const loans = getLoans()
+      expect(loans).toHaveLength(2)
+      expect(loans[0]?.applicantName).toBe('Existing User')
+      expect(loans[1]?.applicantName).toBe('New User')
     })
   })
 
