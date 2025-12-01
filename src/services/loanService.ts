@@ -1,4 +1,5 @@
 import type { LoanApplication, LoanStatus, CreateLoanInput } from '../types/loan'
+import { createAuditLogEntry } from './auditLogService'
 
 const STORAGE_KEY = 'tredgate_loans'
 
@@ -65,6 +66,14 @@ export function createLoanApplication(input: CreateLoanInput): LoanApplication {
   loans.push(newLoan)
   saveLoans(loans)
 
+  // Create audit log entry
+  createAuditLogEntry({
+    action: 'loan_created',
+    loanId: newLoan.id,
+    newStatus: 'pending',
+    details: `Loan created for ${newLoan.applicantName}`
+  })
+
   return newLoan
 }
 
@@ -81,7 +90,17 @@ export function updateLoanStatus(id: string, status: LoanStatus): void {
 
   const loan = loans[loanIndex]
   if (loan) {
+    const previousStatus = loan.status
     loan.status = status
+    
+    // Create audit log entry
+    createAuditLogEntry({
+      action: 'status_changed',
+      loanId: id,
+      previousStatus,
+      newStatus: status,
+      details: `Status changed from ${previousStatus} to ${status}`
+    })
   }
   saveLoans(loans)
 }
@@ -108,11 +127,21 @@ export function autoDecideLoan(id: string): void {
     throw new Error(`Loan with id ${id} not found`)
   }
 
+  const previousStatus = loan.status
   if (loan.amount <= 100000 && loan.termMonths <= 60) {
     loan.status = 'approved'
   } else {
     loan.status = 'rejected'
   }
+
+  // Create audit log entry
+  createAuditLogEntry({
+    action: 'auto_decided',
+    loanId: id,
+    previousStatus,
+    newStatus: loan.status,
+    details: `Auto-decision: ${loan.status}`
+  })
 
   saveLoans(loans)
 }
