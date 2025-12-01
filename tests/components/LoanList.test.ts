@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import LoanList from '../../src/components/LoanList.vue'
 import type { LoanApplication } from '../../src/types/loan'
@@ -176,7 +176,7 @@ describe('LoanList', () => {
     })
     
     const actionButtons = wrapper.findAll('.action-btn')
-    expect(actionButtons).toHaveLength(3)
+    expect(actionButtons).toHaveLength(4) // approve, reject, auto-decide, delete
     expect(actionButtons[0]?.classes()).toContain('success')
     expect(actionButtons[1]?.classes()).toContain('danger')
     expect(actionButtons[2]?.classes()).toContain('secondary')
@@ -187,7 +187,7 @@ describe('LoanList', () => {
       props: { loans: [mockLoans[1]!] }
     })
     
-    expect(wrapper.findAll('.action-btn')).toHaveLength(0)
+    expect(wrapper.findAll('.action-btn')).toHaveLength(1) // only delete button
     expect(wrapper.find('.no-actions').exists()).toBe(true)
   })
 
@@ -196,7 +196,7 @@ describe('LoanList', () => {
       props: { loans: [mockLoans[2]!] }
     })
     
-    expect(wrapper.findAll('.action-btn')).toHaveLength(0)
+    expect(wrapper.findAll('.action-btn')).toHaveLength(1) // only delete button
     expect(wrapper.find('.no-actions').exists()).toBe(true)
   })
 
@@ -245,6 +245,55 @@ describe('LoanList', () => {
     expect(actionButtons[0]?.attributes('title')).toBe('Approve')
     expect(actionButtons[1]?.attributes('title')).toBe('Reject')
     expect(actionButtons[2]?.attributes('title')).toBe('Auto-decide')
+    expect(actionButtons[3]?.attributes('title')).toBe('Delete')
+  })
+
+  it('shows delete button for all loans', () => {
+    const wrapper = mount(LoanList, {
+      props: { loans: mockLoans }
+    })
+    
+    const rows = wrapper.findAll('tbody tr')
+    // Each row should have delete button
+    rows.forEach((row) => {
+      const deleteButtons = row.findAll('.action-btn').filter(btn => btn.attributes('title') === 'Delete')
+      expect(deleteButtons).toHaveLength(1)
+    })
+  })
+
+  it('emits delete event when delete button is clicked and confirmed', async () => {
+    // Mock window.confirm to return true
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    
+    const wrapper = mount(LoanList, {
+      props: { loans: [mockLoans[0]!] }
+    })
+    
+    const deleteButton = wrapper.findAll('.action-btn').find(btn => btn.attributes('title') === 'Delete')
+    await deleteButton?.trigger('click')
+    
+    expect(confirmSpy).toHaveBeenCalledWith('Are you sure you want to delete this loan application?')
+    expect(wrapper.emitted('delete')).toBeTruthy()
+    expect(wrapper.emitted('delete')?.[0]).toEqual(['1'])
+    
+    confirmSpy.mockRestore()
+  })
+
+  it('does not emit delete event when deletion is cancelled', async () => {
+    // Mock window.confirm to return false
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    
+    const wrapper = mount(LoanList, {
+      props: { loans: [mockLoans[0]!] }
+    })
+    
+    const deleteButton = wrapper.findAll('.action-btn').find(btn => btn.attributes('title') === 'Delete')
+    await deleteButton?.trigger('click')
+    
+    expect(confirmSpy).toHaveBeenCalled()
+    expect(wrapper.emitted('delete')).toBeFalsy()
+    
+    confirmSpy.mockRestore()
   })
 
   it('renders multiple pending loans with separate actions', async () => {
